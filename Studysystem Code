@@ -1,0 +1,157 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <sstream>
+using namespace std;
+
+struct Note {
+    string subject;
+    string topic;
+    string description;
+    int rating;
+};
+
+vector<Note> notes;
+
+// Load notes from file
+void loadNotes() {
+    ifstream file("notes.txt");
+    if (!file) return;
+
+    string line;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        Note n;
+        getline(ss, n.subject, '|');
+        getline(ss, n.topic, '|');
+        getline(ss, n.description, '|');
+        ss >> n.rating;
+        notes.push_back(n);
+    }
+    file.close();
+}
+
+// Save notes to file
+void saveNotes() {
+    ofstream file("notes.txt");
+    for (auto n : notes) {
+        file << n.subject << "|"
+             << n.topic << "|"
+             << n.description << "|"
+             << n.rating << endl;
+    }
+    file.close();
+}
+
+// Add new note
+void addNote() {
+    Note n;
+    cin.ignore();
+
+    cout << "Enter Subject: ";
+    getline(cin, n.subject);
+
+    cout << "Enter Topic: ";
+    getline(cin, n.topic);
+
+    cout << "Enter Description: ";
+    getline(cin, n.description);
+
+    n.rating = 0;
+    notes.push_back(n);
+
+    saveNotes();
+    cout << "Note added successfully!\n";
+}
+
+// Display all notes
+void displayNotes() {
+    if (notes.empty()) {
+        cout << "No notes available.\n";
+        return;
+    }
+
+    for (int i = 0; i < notes.size(); i++) {
+        cout << "\nNote " << i + 1 << endl;
+        cout << "Subject: " << notes[i].subject << endl;
+        cout << "Topic: " << notes[i].topic << endl;
+        cout << "Description: " << notes[i].description << endl;
+        cout << "Rating: " << notes[i].rating << "/5\n";
+    }
+}
+
+// Search notes
+void searchNote() {
+    string key;
+    cin.ignore();
+    cout << "Enter subject or topic to search: ";
+    getline(cin, key);
+
+    bool found = false;
+    for (auto n : notes) {
+        if (n.subject == key || n.topic == key) {
+            cout << "\nSubject: " << n.subject
+                 << "\nTopic: " << n.topic
+                 << "\nDescription: " << n.description
+                 << "\nRating: " << n.rating << "/5\n";
+            found = true;
+        }
+    }
+
+    if (!found)
+        cout << "No matching notes found.\n";
+}
+
+// Rate a note
+void rateNote() {
+    int index, rate;
+    displayNotes();
+
+    cout << "\nEnter note number to rate: ";
+    cin >> index;
+
+    if (index < 1 || index > notes.size()) {
+        cout << "Invalid note number.\n";
+        return;
+    }
+
+    cout << "Enter rating (1 to 5): ";
+    cin >> rate;
+
+    if (rate < 1 || rate > 5) {
+        cout << "Invalid rating.\n";
+        return;
+    }
+
+    notes[index - 1].rating = rate;
+    saveNotes();
+    cout << "Rating updated successfully!\n";
+}
+
+// Main menu
+int main() {
+    loadNotes();
+    int choice;
+
+    do {
+        cout << "\n--- Study Notes Discovery System ---\n";
+        cout << "1. Add Note\n";
+        cout << "2. View All Notes\n";
+        cout << "3. Search Notes\n";
+        cout << "4. Rate Note\n";
+        cout << "5. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: addNote(); break;
+            case 2: displayNotes(); break;
+            case 3: searchNote(); break;
+            case 4: rateNote(); break;
+            case 5: cout << "Exiting program...\n"; break;
+            default: cout << "Invalid choice.\n";
+        }
+    } while (choice != 5);
+
+    return 0;
+}
